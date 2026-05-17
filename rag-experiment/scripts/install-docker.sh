@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "========================================="
-echo "Docker 和 Docker Compose 安装脚本"
+echo "Docker 和 Docker Compose 安装脚本 (国内镜像版)"
 echo "========================================="
 echo ""
 
@@ -20,7 +20,7 @@ echo ""
 
 case $OS in
     ubuntu|debian)
-        echo "正在为 Debian/Ubuntu 系统安装 Docker..."
+        echo "正在为 Debian/Ubuntu 系统安装 Docker...(使用阿里云镜像)"
         
         # 更新包索引
         sudo apt-get update
@@ -28,13 +28,13 @@ case $OS in
         # 安装依赖
         sudo apt-get install -y ca-certificates curl gnupg lsb-release
         
-        # 添加 Docker 官方 GPG 密钥
+        # 添加阿里云 Docker GPG 密钥
         sudo mkdir -p /etc/apt/keyrings
-        curl -fsSL https://download.docker.com/linux/$OS/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+        curl -fsSL https://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
         
-        # 设置仓库
+        # 设置阿里云仓库
         echo \
-          "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$OS \
+          "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://mirrors.aliyun.com/docker-ce/linux/ubuntu \
           $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
         
         # 安装 Docker Engine
@@ -44,13 +44,13 @@ case $OS in
         ;;
         
     centos|rhel|fedora)
-        echo "正在为 CentOS/RHEL/Fedora 系统安装 Docker..."
+        echo "正在为 CentOS/RHEL/Fedora 系统安装 Docker...(使用阿里云镜像)"
         
         # 安装依赖
         sudo yum install -y yum-utils
         
-        # 设置仓库
-        sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+        # 设置阿里云仓库
+        sudo yum-config-manager --add-repo https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
         
         # 安装 Docker Engine
         sudo yum install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
@@ -68,6 +68,18 @@ echo ""
 echo "启动 Docker 服务..."
 sudo systemctl start docker
 sudo systemctl enable docker
+
+echo ""
+echo "配置 Docker 镜像加速器..."
+mkdir -p ~/.docker
+cat > ~/.docker/config.json << 'EOF'
+{
+    "registry-mirrors": [
+        "https://registry.cn-hangzhou.aliyuncs.com",
+        "https://hub-mirror.c.163.com"
+    ]
+}
+EOF
 
 echo ""
 echo "将当前用户添加到 docker 组..."
